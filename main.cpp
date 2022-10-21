@@ -42,4 +42,12 @@ int main()
     std::shared_ptr<Worker> w2(new Worker);
 
     std::thread t1(&Worker::task, &w1, 30);
+    std::thread t2(&Worker::task, w2, 20);
+
+    t1.join();
+    t2.join();
+
+    w1.dump();
+    w2->dump();
+    return 0;
 }
