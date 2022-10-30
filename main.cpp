@@ -17,11 +17,16 @@ int fibonacci(int n)
     return (x);
 }
 
-int multVetor(int n, int *vet1, int *vet2)
+// multiplica uma linha por uma coluna
+int multVetor(int n, int k, int **m1, int **m2)
 {
-    int i, res = 0;
+    int i, j, res = 0;
+    // é preciso utilizar dois for alinhados, um para linha e outro para coluna
     for (i = 0; i < n; i++)
-        res += (vet1[i] * vet2[i]);
+    {
+        for (j = 0; j < n; j++)
+            res += m1[i][k] * m2[k][j];
+    }
     return res;
 }
 
@@ -54,7 +59,7 @@ public:
     Worker();
     void taskSum(int n, int *v1, int *v2);
     void taskSub(int n, int *v1, int *v2);
-    void taskMult(int n, int *v1, int *v2);
+    void taskMult(int n, int k, int **m1, int **m2);
     void taskFib(int n);
     int getResult();
 };
@@ -71,9 +76,9 @@ void Worker::taskFib(int n)
     result = fibonacci(n);
 }
 
-void Worker::taskMult(int n, int *v1, int *v2)
+void Worker::taskMult(int n, int k, int **m1, int **m2)
 {
-    result = multVetor(n, v1, v2);
+    result = multVetor(n, k, m1, m2);
 }
 
 // tarefa respomsaveç para executar a operação de soma de dois vetores
@@ -149,7 +154,7 @@ int **gerarMatriz(int n)
     for (i = 0; i < n; i++)
     {
         for (j = 0; j < n; j++)
-            matriz[i][j] = rand() % 99 + 1;
+            matriz[i][j] = rand() % 10 + 1;
     }
     return matriz;
 }
@@ -257,10 +262,10 @@ int subsThreads(int n, int **m1, int **m2)
     return res;
 }
 
-// ainda falta arrumar
+// mult threads, funciona da mesma forma que os outros, são 10 threads que operam na matriz multiplicando a linha pela coluna
 int multThreads(int n, int **m1, int **m2)
 {
-    int res = 0, i;
+    int res = 0, i, j;
     for (i = 0; i < n; i += 10)
     {
         Worker w1;
@@ -274,16 +279,17 @@ int multThreads(int n, int **m1, int **m2)
         Worker w9;
         Worker w10;
 
-        std::thread t1(&Worker::taskMult, &w1, n, m1[i], m2[i]);
-        std::thread t2(&Worker::taskMult, &w2, n, m1[i + 1], m2[i + 1]);
-        std::thread t3(&Worker::taskMult, &w3, n, m1[i + 2], m2[i + 2]);
-        std::thread t4(&Worker::taskMult, &w4, n, m1[i + 3], m2[i + 3]);
-        std::thread t5(&Worker::taskMult, &w5, n, m1[i + 4], m2[i + 4]);
-        std::thread t6(&Worker::taskMult, &w6, n, m1[i + 5], m2[i + 5]);
-        std::thread t7(&Worker::taskMult, &w7, n, m1[i + 6], m2[i + 6]);
-        std::thread t8(&Worker::taskMult, &w8, n, m1[i + 7], m2[i + 7]);
-        std::thread t9(&Worker::taskMult, &w9, n, m1[i + 8], m2[i + 8]);
-        std::thread t10(&Worker::taskMult, &w10, n, m1[i + 9], m2[i + 9]);
+        // cada thread ira receber as duas matrizes e o valor de k do caso sequencial
+        std::thread t1(&Worker::taskMult, &w1, n, i, m1, m2);
+        std::thread t2(&Worker::taskMult, &w2, n, i + 1, m1, m2);
+        std::thread t3(&Worker::taskMult, &w3, n, i + 2, m1, m2);
+        std::thread t4(&Worker::taskMult, &w4, n, i + 3, m1, m2);
+        std::thread t5(&Worker::taskMult, &w5, n, i + 4, m1, m2);
+        std::thread t6(&Worker::taskMult, &w6, n, i + 5, m1, m2);
+        std::thread t7(&Worker::taskMult, &w7, n, i + 6, m1, m2);
+        std::thread t8(&Worker::taskMult, &w8, n, i + 7, m1, m2);
+        std::thread t9(&Worker::taskMult, &w9, n, i + 8, m1, m2);
+        std::thread t10(&Worker::taskMult, &w10, n, i + 9, m1, m2);
 
         t1.join();
         t2.join();
@@ -424,6 +430,22 @@ int main()
 
     std::cout << "Resultado da subtração usando threads: " << res << "\nFeita no tempo: " << time_spent << std::endl;
 
+    time_spent = 0.0;
+    begin = clock();
+    res = multiplicaMatriz(n, m1, m2);
+    end = clock();
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+
+    std::cout << "Resultado da multiplicação sequencial: " << res << "\nFeita no tempo: " << time_spent << std::endl;
+
+    time_spent = 0.0;
+    begin = clock();
+    res = multThreads(n, m1, m2);
+    end = clock();
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+
+    std::cout << "Resultado da multiplicação usando threads: " << res << "\nFeita no tempo: " << time_spent << std::endl;
+
     apagarMatriz(n, m1);
     apagarMatriz(n, m2);
 
@@ -465,6 +487,22 @@ int main()
     time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
 
     std::cout << "Resultado da subtração usando threads: " << res << "\nFeita no tempo: " << time_spent << std::endl;
+
+    time_spent = 0.0;
+    begin = clock();
+    res = multiplicaMatriz(n, m1, m2);
+    end = clock();
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+
+    std::cout << "Resultado da multiplicação sequencial: " << res << "\nFeita no tempo: " << time_spent << std::endl;
+
+    time_spent = 0.0;
+    begin = clock();
+    res = multThreads(n, m1, m2);
+    end = clock();
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+
+    std::cout << "Resultado da multiplicação usando threads: " << res << "\nFeita no tempo: " << time_spent << std::endl;
 
     apagarMatriz(n, m1);
     apagarMatriz(n, m2);
