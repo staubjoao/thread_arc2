@@ -535,7 +535,7 @@ int main()
     time_spent = 0.0, time_spent2 = 0.0;
     begin = clock();
     Worker w1;
-    std::thread t1(&Worker::taskFib, &w1, 6);
+    std::thread t1(&Worker::taskFib, &w1, fib1);
     std::cout << "Iniciado para o valor " << fib1 << std::endl;
     // inicia a execução de um número em uma thread
     t1.join();
@@ -546,7 +546,7 @@ int main()
 
     begin = clock();
     Worker w2;
-    std::thread t2(&Worker::taskFib, &w2, 20);
+    std::thread t2(&Worker::taskFib, &w2, fib2);
     std::cout << "Iniciado para o valor " << fib2 << std::endl;
     // inica a execução de outro número em outra thread
     t2.join();
